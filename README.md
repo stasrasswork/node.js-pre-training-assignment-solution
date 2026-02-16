@@ -1,4 +1,4 @@
-# Pre-Internship ToDo Course: Guide
+#Pre-Internship ToDo Course: Guide
 
 A comprehensive training course covering JavaScript/TypeScript, React, Node.js, databases, and DevOps. Each topic has its own dedicated project structure with tasks, solutions, and tests.
 
