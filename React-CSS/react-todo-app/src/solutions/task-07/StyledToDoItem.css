@@ -1,13 +1,35 @@
 .todo-item {
-  padding: 10px;
-  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  margin: 8px 0;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
   background-color: #f9f9f9;
 }
 
 .todo-item.completed {
   background-color: #e8f5e8;
-  text-decoration: line-through;
+  border-color: #c7e7c7;
   color: #666;
 } 
+
+.todo-item.active {
+  background-color: #fff8e1;
+  border-color: #f3df9f;
+}
+
+.todo-item-title {
+  font-weight: 600;
+}
+
+.todo-item.completed .todo-item-title {
+  text-decoration: line-through;
+}
+
+.todo-item-status {
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}

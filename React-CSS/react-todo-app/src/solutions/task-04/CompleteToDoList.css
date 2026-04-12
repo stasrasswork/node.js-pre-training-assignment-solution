@@ -1,0 +1,154 @@
+.complete-todo-list {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.todo-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.todo-input {
+  flex: 1 1 auto;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid #c7c7c7;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.todo-input:focus {
+  outline: none;
+  border-color: #9ea7b3;
+}
+
+.add-button,
+.complete-button {
+  border: 1px solid #c7c7c7;
+  border-radius: 6px;
+  background: #fff;
+  color: #222;
+  min-height: 36px;
+  padding: 0 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.todo-item.completed {
+  opacity: 0.75;
+  background: #e8f5e9;
+}
+
+.todo-item.not-completed {
+  background: #fff8e1;
+}
+
+.todo-item-title {
+  flex: 1;
+  text-align: left;
+  font-weight: 600;
+}
+
+.todo-item__status {
+  flex: 1;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.complete-button {
+  margin-left: auto;
+}
+.complete-todo-list {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.todo-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.todo-input {
+  flex: 1 1 auto;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid #c7c7c7;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.todo-input:focus {
+  outline: none;
+  border-color: #9ea7b3;
+}
+
+.add-button,
+.complete-button {
+  border: 1px solid #c7c7c7;
+  border-radius: 6px;
+  background: #fff;
+  color: #222;
+  min-height: 36px;
+  padding: 0 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.todo-item.completed {
+  opacity: 0.75;
+  background: #e8f5e9;
+}
+
+.todo-item.not-completed {
+  background: #fff8e1;
+}
+
+.todo-item-title {
+  flex: 1;
+  text-align: left;
+  font-weight: 600;
+}
+
+.todo-item__status {
+  flex: 1;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.complete-button {
+  margin-left: auto;
+}

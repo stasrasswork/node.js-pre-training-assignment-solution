@@ -1,5 +1,6 @@
 import React from 'react';
 import { TodoItemProps } from '../../types';
+import './ToDoItem.css';
 
 /**
  * Task 2: ToDoItem Component
@@ -47,10 +48,11 @@ export const ToDoItem: React.FC<TodoItemProps> = ({ todo }) => {
   // <ToDoItem todo={{ id: 1, title: 'Learn React', completed: true }} />
 
   return (
-    <div>
-      {/* TODO: Replace this with your implementation */}
-      <h4>ToDo Item Component</h4>
-      <p>Implement conditional rendering here</p>
+    <div className={todo.completed ? 'todo-item completed' : 'todo-item not-completed'}>
+      <span className='todo-item-title'>{todo.title}</span>
+      <span className='todo-item__status'>
+        {todo.completed ? 'Completed' : 'Active'}
+      </span>
     </div>
   );
 }; 

@@ -72,28 +72,50 @@ export const FetchToDos: React.FC = () => {
   // 5. Use useEffect for data fetching
   // 
   // Example implementation:
-  // const [todos, setTodos] = useState<Todo[]>([]);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
-  // 
-  // useEffect(() => {
-  //   fetch('https://jsonplaceholder.typicode.com/todos')
-  //     .then(response => response.json())
-  //     .then(data => {
-  //       setTodos(data.slice(0, 5)); // Limit to 5 todos
-  //       setLoading(false);
-  //     })
-  //     .catch(err => {
-  //       setError(err.message);
-  //       setLoading(false);
-  //     });
-  // }, []);
+
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/todos');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch todos: ${response.status}`);
+        }
+
+        const data: Todo[] = await response.json();
+        setTodos(data.slice(0, 5));
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Something went wrong while fetching todos';
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTodos();
+  }, []);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
 
   return (
     <div>
-      {/* TODO: Replace this with your implementation */}
-      <h4>Fetch ToDos Component</h4>
-      <p>Implement data fetching with useEffect here</p>
+      <ul>
+        {todos.map((todo) => (
+          <li key={todo.id}>
+            {todo.title} - {todo.completed ? 'completed' : 'not completed'}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }; 

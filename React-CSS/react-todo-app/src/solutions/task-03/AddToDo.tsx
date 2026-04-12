@@ -48,11 +48,36 @@ export const AddToDo: React.FC = () => {
   // const [inputValue, setInputValue] = useState('');
   // const [todos, setTodos] = useState<Todo[]>([]);
 
+  const [inputValue, setInputValue] = useState('');
+  const [todos, setTodos] = useState<Todo[]>([]);
+  
+  const handlerSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const title =inputValue.trim();
+    if (!title) {
+      return
+    }
+
+    setTodos(prev => [
+      ...prev, {id: Date.now(), title, completed: false},
+    ]);
+    setInputValue('');
+  };
   return (
-    <div>
-      {/* TODO: Replace this with your implementation */}
-      <h4>Add ToDo Component</h4>
-      <p>Implement useState and form handling here</p>
-    </div>
+    <>
+      <form onSubmit={handlerSubmit}>
+        <input type="text"
+          placeholder='Add Todo' 
+          value={inputValue}
+          onChange={e => setInputValue(e.target.value)}/>
+        <button type="submit">Add</button>
+      </form>
+      <ul>
+        {todos.map(todo => (
+          <li key={todo.id}>{todo.title}</li>
+        ))}
+      </ul>
+    </>
   );
 }; 

@@ -1,0 +1,23 @@
+.todo-item {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .todo-item.completed {
+    opacity: 0.75;
+    background: #e8f5e9;
+  }
+  
+  .todo-item.not-completed {
+    background: #fff8e1;
+  }
+  
+  .todo-item-title {
+    font-weight: 600;
+  }
+  
+  .todo-item__status {
+    margin-left: 8px;
+    font-size: 0.9rem;
+  }

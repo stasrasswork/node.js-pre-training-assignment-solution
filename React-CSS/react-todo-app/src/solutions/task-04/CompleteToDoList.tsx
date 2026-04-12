@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Todo } from '../../types';
+import './CompleteToDoList.css';
 
 /**
  * Task 4: CompleteToDoList Component
@@ -56,12 +57,55 @@ export const CompleteToDoList: React.FC = () => {
   //     todo.id === id ? {...todo, completed: true} : todo
   //   ));
   // };
+  
+  const [inputValue, setInputValue] = useState('');
+  const [todos, setTodos] = useState<Todo[]>([]);
+
+  const handleComplete = (id: number) => {
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === id ? { ...todo, completed: true } : todo
+      )
+    );
+  };
+
+  const handlerSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const title =inputValue.trim();
+    if (!title) {
+      return
+    }
+
+    setTodos(prev => [
+      ...prev, {id: Date.now(), title, completed: false},
+    ]);
+    setInputValue('');
+  };
 
   return (
-    <div>
-      {/* TODO: Replace this with your implementation */}
-      <h4>Complete ToDo List Component</h4>
-      <p>Implement immutable state updates here</p>
+    <div className="complete-todo-list">
+      <form className="todo-form" onSubmit={handlerSubmit}>
+        <input
+          className="todo-input"
+          type="text"
+          placeholder='Add todo' 
+          value={inputValue}
+          onChange={e => setInputValue(e.target.value)}
+        />
+        <button className="add-button" type="submit">Add</button>
+      </form>
+      <ul className="todo-list">
+        {todos.map(todo => (
+          <li key={todo.id}>
+            <div className={todo.completed ? 'todo-item completed' : 'todo-item not-completed'}>
+              <span className="todo-item-title">{todo.title}</span>
+              <span className="todo-item__status">{todo.completed ? 'completed' : 'not completed'}</span>
+              <button className="complete-button" onClick={() => handleComplete(todo.id)}>Complete</button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }; 
