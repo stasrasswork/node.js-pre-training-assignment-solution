@@ -4,7 +4,6 @@ export function mapArray<T, R>(source: readonly T[], mapper: (item: T, index: nu
   }
 
   const result: R[] = [];
-  let index = 0;
 
   for (let i = 0; i < source.length; i++) {
     result.push(mapper(source[i], i));
