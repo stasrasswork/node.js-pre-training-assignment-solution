@@ -1,9 +1,9 @@
 import { addTodo, updateTodo, removeTodo, getTodo } from '../JS-TS/solutions/todo-crud';
 import { createTodo } from '../JS-TS/solutions/todo-factory';
-import { TodoStatus } from '../JS-TS/solutions/types';
+import { Todo, TodoStatus } from '../JS-TS/solutions/types';
 
 describe('Task 04: CRUD operations', () => {
-  const base = [];
+  const base: Todo[] = [];
   const todo = createTodo({ title: 'X' });
 
   it('addTodo should add item immutably', () => {
