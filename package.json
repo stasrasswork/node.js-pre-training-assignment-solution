@@ -13,22 +13,33 @@
     "test:db-nosql": "jest tests/db-nosql.test.js",
     "test:js-ts-all": "jest --testPathPatterns=js-ts-task",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:express-app": "jest --runInBand --roots Node-Express-Nest/v0/solutions/express-app --testMatch **/express.test.js",
+    "test:nest-app": "jest --runInBand --roots Node-Express-Nest/v0/solutions/nest-app --testMatch **/*.spec.ts",
+    "test:nest-controller": "jest --runInBand --roots Node-Express-Nest/v0/solutions/nest-app --testMatch **/todo.controller.spec.ts",
+    "test:nest-service": "jest --runInBand --roots Node-Express-Nest/v0/solutions/nest-app --testMatch **/todo.service.spec.ts",
+    "test:nest-dto": "jest --runInBand --roots Node-Express-Nest/v0/solutions/nest-app --testMatch **/todo.dto.spec.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@nestjs/testing": "^11.1.19",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "jest": "^30.0.4",
-    "ts-jest": "^29.1.0"
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.9"
   },
   "dependencies": {
+    "@nestjs/common": "^11.1.19",
+    "@nestjs/core": "^11.1.19",
     "express": "^5.1.0",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
   }
 }
