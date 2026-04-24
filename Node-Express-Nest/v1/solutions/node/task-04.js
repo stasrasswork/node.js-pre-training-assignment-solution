@@ -1,5 +1,6 @@
 const http = require("http");
 const url = require("url");
+const TodoService = require("./todoService");
 
 /**
  * Todo REST API Server
@@ -120,12 +121,7 @@ function validateTodo(todoData, isUpdate = false) {
 class TodoServer {
   constructor(port = 3000) {
     this.port = port;
-    this.todos = [];
-    this.nextId = 1;
-
-    // Sample todos for testing
-    this.initializeSampleData();
-    this.nextId = this.generateNextId();
+    this.todoService = new TodoService();
   }
 
   /**
@@ -210,25 +206,19 @@ class TodoServer {
    * @param {Object} query - URL query parameters
    */
   async getAllTodos(req, res, query) {
-    let filteredTodos = [...this.todos];
-
-    if (query && Object.prototype.hasOwnProperty.call(query, "completed")) {
-      if (query.completed !== "true" && query.completed !== "false") {
-        return sendResponse(res, 400, {
-          success: false,
-          error: "Invalid completed query parameter. Use true or false",
-        });
-      }
-
-      const completedValue = query.completed === "true";
-      filteredTodos = filteredTodos.filter((todo) => todo.completed === completedValue);
+    try {
+      const todos = this.todoService.getTodos(query);
+      return sendResponse(res, 200, {
+        success: true,
+        data: todos,
+        count: todos.length,
+      });
+    } catch (error) {
+      return sendResponse(res, error.status || 500, {
+        success: false,
+        error: error.message || "Internal server error",
+      });
     }
-
-    return sendResponse(res, 200, {
-      success: true,
-      data: filteredTodos,
-      count: filteredTodos.length,
-    });
   }
 
   /**
@@ -246,7 +236,7 @@ class TodoServer {
       });
     }
 
-    const todo = this.findTodoById(id);
+    const todo = this.todoService.getTodoById(id);
     if (!todo) {
       return sendResponse(res, 404, {
         success: false,
@@ -266,29 +256,19 @@ class TodoServer {
    * @param {ServerResponse} res - HTTP response
    */
   async createTodo(req, res) {
-    const todoData = await parseBody(req);
-    const validationResult = validateTodo(todoData);
-    if (!validationResult.isValid) {
+    try {
+      const todoData = await parseBody(req);
+      const newTodo = this.todoService.createTodo(todoData);
+      return sendResponse(res, 201, {
+        success: true,
+        data: newTodo,
+      });
+    } catch (error) {
       return sendResponse(res, 400, {
         success: false,
-        error: validationResult.errors.join(", "),
+        error: error.message || "Invalid payload",
       });
     }
-
-    const newTodo = {
-      id: this.generateNextId(),
-      title: todoData.title.trim(),
-      description: todoData.description?.trim() ?? "",
-      completed: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.todos.push(newTodo);
-    
-    sendResponse(res, 201, {
-      success: true,
-      data: newTodo,
-    });
   }
 
   /**
@@ -306,36 +286,26 @@ class TodoServer {
       });
     }
 
-    const todoIndex = this.findTodoIndexById(id);
-    if (todoIndex === -1) {
+    const existingTodo = this.todoService.getTodoById(id);
+    if (!existingTodo) {
       return sendResponse(res, 404, {
         success: false,
         error: "Todo not found",
       });
     }
-
-    const todo = this.todos[todoIndex];
-
-    const todoData = await parseBody(req);
-    const validationResult = validateTodo(todoData, true);
-    if (!validationResult.isValid) {
-      return sendResponse(res, 400, {
+    try {
+      const todoData = await parseBody(req);
+      const updatedTodo = this.todoService.updateTodo(id, todoData);
+      return sendResponse(res, 200, {
+        success: true,
+        data: updatedTodo,
+      });
+    } catch (error) {
+      return sendResponse(res, error.status || 400, {
         success: false,
-        error: validationResult.errors.join(", "),
+        error: error.message || "Invalid payload",
       });
     }
-
-    const updatedTodo = {
-      ...todo,
-      ...todoData,
-      updatedAt: new Date(),
-    };
-    this.todos[todoIndex] = updatedTodo;
-
-    sendResponse(res, 200, {
-      success: true,
-      data: updatedTodo,
-    });
   }
 
   /**
@@ -353,15 +323,13 @@ class TodoServer {
       });
     }
 
-    const todoIndex = this.findTodoIndexById(id);
-    if (todoIndex === -1) {
+    const deletedTodo = this.todoService.deleteTodo(id);
+    if (!deletedTodo) {
       return sendResponse(res, 404, {
         success: false,
         error: "Todo not found",
       });
     }
-
-    this.todos.splice(todoIndex, 1);
 
     sendResponse(res, 200, {
       success: true,
