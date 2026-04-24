@@ -5,28 +5,36 @@ const { pipeline } = require("stream/promises");
 class CSVParser extends Transform {
   constructor(options = {}) {
     super({ objectMode: true });
-    // TODO: Initialize properties
-    // - this.headers = null;
-    // - this.lineNumber = 0;
-    // - this.buffer = '';
+    this.headers = null;
+    this.lineNumber = 0;
+    this.buffer = '';
   }
 
   _transform(chunk, encoding, callback) {
-    // TODO: Implement CSV parsing
-    // 1. Convert chunk to string and add to buffer
-    // 2. Split buffer by newlines
-    // 3. Keep last incomplete line in buffer
-    // 4. Process complete lines:
-    //    - First line: extract headers
-    //    - Other lines: create objects with headers as keys
-    // 5. Push objects to next stream
-
-    callback();
+    try {
+      const chunkString = chunk.toString('utf8');
+      this.buffer += chunkString;
+      const lines = this.buffer.split('\n');
+      this.buffer = lines.pop();
+      for (const line of lines) {
+        const record = line.split(',');
+      }
+    } catch (error) {
+      callback(error);
+    }
   }
 
   _flush(callback) {
-    // TODO: Process any remaining data in buffer
-    callback();
+
+    try {
+      if (this.buffer) {
+        const record = this.buffer.split('\n')[0];
+        this.push(record);
+      }
+      callback();
+    } catch (error) {
+      callback(error);
+    }
   }
 }
 
@@ -40,15 +48,18 @@ class DataTransformer extends Transform {
   }
 
   _transform(record, encoding, callback) {
-    // TODO: Apply transformations to record
-    // 1. Capitalize name using capitalizeName()
-    // 2. Normalize email using normalizeEmail()
-    // 3. Format phone using formatPhone()
-    // 4. Standardize date using standardizeDate()
-    // 5. Capitalize city name
-    // 6. Push transformed record
-
-    callback();
+    try {
+      this.push({
+        name: capitalizeName(record.name),
+        email: normalizeEmail(record.email),
+        phone: formatPhone(record.phone),
+        birthdate: standardizeDate(record.birthdate),
+        city: capitalizeName(record.city),
+      });
+      callback();
+    } catch (error) {
+      callback(error);
+    }
   }
 }
 
@@ -59,24 +70,38 @@ class DataTransformer extends Transform {
 class CSVWriter extends Transform {
   constructor(options = {}) {
     super({ objectMode: true });
-    // TODO: Initialize properties
-    // - this.headerWritten = false;
+    this.headerWritten = false;
+
   }
 
   _transform(record, encoding, callback) {
-    // TODO: Convert object to CSV format
-    // 1. Write headers on first record
-    // 2. Convert record values to CSV line
-    // 3. Handle special characters and quotes
-    // 4. Push CSV line as string
-
-    callback();
+    try {
+      if (!this.headerWritten) {
+        this.headerWritten = true;
+        this.push(escapeCSVField(Object.keys(record).join(',')));
+      }
+      this.push(escapeCSVField(Object.values(record).join(',')));
+    } catch (error) {
+      callback(error);
+    }
   }
 }
 
 /**
  * Helper Functions
  */
+/**
+ * Escape CSV field
+ * @param {string} value - Value to escape
+ * @returns {string} Escaped value
+ */
+function escapeCSVField(value) {
+  const s = String(value ?? "");
+  if (/[",\n\r]/.test(s)) {
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+  return s;
+}
 
 /**
  * Capitalize names properly
@@ -93,7 +118,21 @@ function capitalizeName(name) {
   // "john doe" → "John Doe"
   // "mary-jane smith" → "Mary-Jane Smith"
 
-  return name;
+  if (!name) {
+    return name;
+  }
+  const parts = name.split(' ');
+  for (const part of parts) {
+    const newPart = part.toLowerCase();
+    parts[parts.indexOf(part)] = newPart;
+    if (newPart.includes('-')) {
+      const [first, last] = newPart.split('-');
+      parts[parts.indexOf(newPart)] = first.charAt(0).toUpperCase() + first.slice(1) + '-' + last.charAt(0).toUpperCase() + last.slice(1);
+    } else {
+      parts[parts.indexOf(newPart)] = newPart.charAt(0).toUpperCase() + newPart.slice(1);
+    }
+  }
+  return parts.join(' ');
 }
 
 /**
@@ -102,12 +141,13 @@ function capitalizeName(name) {
  * @returns {string} Normalized email or original if invalid
  */
 function normalizeEmail(email) {
-  // TODO: Implement email normalization
-  // 1. Convert to lowercase
-  // 2. Validate basic email format (contains @ and .)
-  // 3. Return normalized email or original if invalid
-
-  return email;
+  if (!email) {
+    return email;
+  }
+  if (!email.includes('@') || !email.includes('.')) {
+    return email;
+  }
+  return email.toLowerCase();
 }
 
 /**
@@ -116,29 +156,67 @@ function normalizeEmail(email) {
  * @returns {string} Formatted phone or "INVALID"
  */
 function formatPhone(phone) {
-  // TODO: Implement phone formatting
-  // 1. Extract only digits
-  // 2. Check if exactly 10 digits
-  // 3. Format as (XXX) XXX-XXXX
-  // 4. Return "INVALID" if not valid
+  if (!phone) {
+    return phone;
+  }
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length !== 10) {
+    return "INVALID";
+  }
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
 
-  return phone;
+/**
+ * Checks that year/month/day form a real calendar date (no rollover in Date).
+ * @param {number} year
+ * @param {number} month 1–12
+ * @param {number} day 1–31
+ * @returns {boolean}
+ */
+function isValidCalendarDate(year, month, day) {
+  if (![year, month, day].every(Number.isFinite)) {
+    return false;
+  }
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return false;
+  }
+  const dt = new Date(year, month - 1, day);
+  return (
+    dt.getFullYear() === year &&
+    dt.getMonth() === month - 1 &&
+    dt.getDate() === day
+  );
 }
 
 /**
  * Standardize date formats
  * @param {string} date - Date to standardize
- * @returns {string} Date in YYYY-MM-DD format
+ * @returns {string} Date in YYYY-MM-DD format, or original if invalid / unknown format
  */
 function standardizeDate(date) {
-  // TODO: Implement date standardization
-  // 1. Handle different input formats:
-  //    - MM/DD/YYYY
-  //    - YYYY-MM-DD
-  //    - YYYY/MM/DD
-  // 2. Convert to YYYY-MM-DD format
-  // 3. Validate date is real
-  // 4. Return original if invalid
+  if (date === undefined || date === null || date === "") {
+    return date;
+  }
+
+  const s = String(date).trim();
+
+  const formatYMD = (y, m, d) =>
+    `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+  const formats = [
+    [/^(\d{4})-(\d{2})-(\d{2})$/, (x) => [+x[1], +x[2], +x[3]]],
+    [/^(\d{4})\/(\d{2})\/(\d{2})$/, (x) => [+x[1], +x[2], +x[3]]],
+    [/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, (x) => [+x[3], +x[1], +x[2]]],
+  ];
+
+  for (const [re, toYMD] of formats) {
+    const m = s.match(re);
+    if (!m) {
+      continue;
+    }
+    const [y, mo, d] = toYMD(m);
+    return isValidCalendarDate(y, mo, d) ? formatYMD(y, mo, d) : date;
+  }
 
   return date;
 }
@@ -159,8 +237,13 @@ async function processCSVFile(inputPath, outputPath) {
   // 6. Return promise that resolves when complete
 
   try {
-    // Implementation goes here
-    console.log("CSV processing not implemented yet");
+    await pipeline(
+      fs.createReadStream(inputPath),
+      new CSVParser(),
+      new DataTransformer(),
+      new CSVWriter(),
+      fs.createWriteStream(outputPath, { encoding: 'utf8' })
+    );
   } catch (error) {
     throw new Error(`Failed to process CSV file: ${error.message}`);
   }
@@ -170,9 +253,21 @@ async function processCSVFile(inputPath, outputPath) {
  * Create sample input data for testing
  */
 function createSampleData() {
-  // TODO: Create data directory and sample CSV file
-  // 1. Create 'data' directory if it doesn't exist
-  // 2. Write sample CSV data as specified in task description
+  if (!fs.existsSync('data')) {
+    fs.mkdirSync('data');
+  }
+  fs.writeFileSync('data/users.csv', `name,email,phone,birthdate,city
+    john doe,JOHN.DOE@EXAMPLE.COM,1234567890,12/25/1990,new york
+    jane smith,Jane.Smith@Gmail.Com,555-123-4567,1985-03-15,los angeles
+    bob johnson,BOB@TEST.COM,invalid-phone,03/22/1992,chicago
+    alice brown,alice.brown@company.org,9876543210,1988/07/04,houston`);
+
+  fs.writeFileSync('data/users_transformed.csv', `name,email,phone,birthdate,city
+    John Doe,john.doe@example.com,(123) 456-7890,1990-12-25,New York
+    Jane Smith,jane.smith@gmail.com,(555) 123-4567,1985-03-15,Los Angeles
+    Bob Johnson,bob@test.com,INVALID,1992-03-22,Chicago
+    Alice Brown,alice.brown@company.org,(987) 654-3210,1988-07-04,Houston`);
+
 }
 
 // Export classes and functions
@@ -185,6 +280,7 @@ module.exports = {
   normalizeEmail,
   formatPhone,
   standardizeDate,
+  isValidCalendarDate,
   createSampleData,
 };
 

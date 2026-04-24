@@ -1,4 +1,5 @@
 const EventEmitter = require("events");
+const fs = require("fs");
 
 /**
  * Custom Event Emitter for a messaging system
@@ -26,7 +27,26 @@ class MessageSystem extends EventEmitter {
    * @param {string} sender - Optional sender name
    * @returns {object} Created message object
    */
-  sendMessage(type, content, sender = "System") {}
+  sendMessage(type, content, sender = "System") {
+    const message = {
+      id: this.messageId++,
+      type,
+      content,
+      sender,
+      timestamp: Date.now(),
+    };
+
+    this.messages.push(message);
+
+    if (this.messages.length >= 100) {
+      this.messages.shift();
+    }
+
+    this.emit("message", message);
+    this.emit(`${type}`, message);
+
+    return message;
+  }
 
   /**
    * Subscribe to all message types
@@ -35,7 +55,9 @@ class MessageSystem extends EventEmitter {
    *
    * @param {function} callback - Callback function to handle messages
    */
-  subscribeToMessages(callback) {}
+  subscribeToMessages(callback) {
+    this.on("message", callback);
+  }
 
   /**
    * Subscribe to specific message type
@@ -45,7 +67,9 @@ class MessageSystem extends EventEmitter {
    * @param {string} type - Message type to subscribe to
    * @param {function} callback - Callback function to handle messages
    */
-  subscribeToType(type, callback) {}
+  subscribeToType(type, callback) {
+    this.on(`${type}`, callback);
+  }
 
   /**
    * Get current number of active users
@@ -54,7 +78,9 @@ class MessageSystem extends EventEmitter {
    *
    * @returns {number} Number of active users
    */
-  getUserCount() {}
+  getUserCount() {
+    return this.users.size;
+  }
 
   /**
    * Get the last N messages (default 10)
@@ -64,7 +90,9 @@ class MessageSystem extends EventEmitter {
    * @param {number} count - Number of messages to retrieve
    * @returns {array} Array of recent messages
    */
-  getMessageHistory(count = 10) {}
+  getMessageHistory(count = 10) {
+    return this.messages.slice(-count);
+  }
 
   /**
    * Add a user to the system
@@ -74,7 +102,15 @@ class MessageSystem extends EventEmitter {
    *
    * @param {string} username - Username to add
    */
-  addUser(username) {}
+  addUser(username) {
+    if (this.users.has(username)) {
+      return;
+    }
+    this.users.add(username);
+    this.emit("user-joined", {
+      content: `User ${username} joined the system`,
+    });
+  }
 
   /**
    * Remove a user from the system
@@ -84,7 +120,15 @@ class MessageSystem extends EventEmitter {
    *
    * @param {string} username - Username to remove
    */
-  removeUser(username) {}
+  removeUser(username) {
+    if (!this.users.has(username)) {  
+      return;
+    }
+    this.users.delete(username);
+    this.emit("user-left", 
+      {content: `User ${username} left the system`}
+    );
+  }
 
   /**
    * Get all active users
@@ -93,7 +137,9 @@ class MessageSystem extends EventEmitter {
    *
    * @returns {array} Array of usernames
    */
-  getActiveUsers() {}
+  getActiveUsers() {
+    return Array.from(this.users);
+  }
 
   /**
    * Clear all messages
@@ -101,7 +147,10 @@ class MessageSystem extends EventEmitter {
    * Clear messages array
    * Emit history-cleared event
    */
-  clearHistory() {}
+  clearHistory() {
+    this.messages = [];
+    this.emit("history-cleared");
+  }
 
   /**
    * Get system statistics
@@ -110,7 +159,51 @@ class MessageSystem extends EventEmitter {
    *
    * @returns {object} System stats
    */
-  getStats() {}
+  getStats() {
+    return {
+      totalMessages: this.messages.length,
+      activeUsers: this.users.size,
+      messagesByType: this.messages.reduce((acc, message) => {
+        acc[message.type] = (acc[message.type] || 0) + 1;
+        return acc;
+      }, {}),
+    };
+  }
+
+  /**
+   * Save messages to file
+   *
+   * @param {string} filename - Filename to save messages to
+   */
+  saveMessagesToFile(filename) {
+    fs.writeFileSync(filename, JSON.stringify(this.messages, null, 'utf8'));
+  }
+
+  /**
+   * Different user roles
+   *
+   * @param {string} username - Username to get role for
+   * @returns {string} Role of the user
+   */
+  getUserRole(username) {
+    return this.users.get(username)?.role ?? "user";
+  }
+
+  /**
+   * Message filtering/search
+   *
+   * @param {string} query - Query to filter messages
+   * @returns {array} Array of filtered messages
+   */
+  filterMessages(query) {
+    if (!query) {
+      return this.messages;
+    }
+    const q = query.toLowerCase();
+    return this.messages.filter((message) =>  
+      message.content.toLowerCase().includes(q)
+    );
+  }
 }
 
 // Export the MessageSystem class
