@@ -4,49 +4,38 @@ const util = require("util");
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 
-function processData() {
+async function processData() {
   console.log("Starting data processing...");
 
-  // Mix of promises and callbacks - BROKEN!
-  readFile("input.txt", "utf8")
-    .then((data) => {
+  try {
+    let data;
+
+    try {
+      data = await readFile("input.txt", "utf8");
       console.log("File read successfully");
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        data = "Hello World!";
+        await writeFile("input.txt", data, "utf8");
+        console.log("Input file not found. Created input.txt with default content.");
 
-      // Process data
-      const processedData = data.toUpperCase();
+        data = await readFile("input.txt", "utf8");
+        console.log("File read successfully");
+      } else {
+        throw err;
+      }
+    } 
+    const processedData = data.toUpperCase();
 
-      // Write with callback instead of promise - WRONG!
-      fs.writeFile("output.txt", processedData, (err) => {
-        if (err) {
-          console.error("Write error:", err);
-          return;
-        }
+    await writeFile("output.txt", processedData, "utf8");
+    console.log("File written successfully");
 
-        console.log("File written successfully");
-
-        // Read again with promise - INCONSISTENT!
-        readFile("output.txt", "utf8")
-          .then((verifyData) => {
-            console.log("Verification successful");
-            console.log("Data length:", verifyData.length);
-          })
-          .catch((err) => {
-            console.error("Verification error:", err);
-          });
-      });
-    })
-    .catch((err) => {
-      console.error("Read error:", err);
-
-      // Create file if it doesn't exist
-      fs.writeFile("input.txt", "Hello World!", (writeErr) => {
-        if (writeErr) {
-          console.error("Could not create input file:", writeErr);
-        } else {
-          console.log("Created input file, please run again");
-        }
-      });
-    });
+    const verifyData = await readFile("output.txt", "utf8");
+    console.log("Verification successful");
+    console.log("Data length:", verifyData.length);
+  } catch (err) {
+    console.error("Error:", err);
+  }
 }
 
 processData();

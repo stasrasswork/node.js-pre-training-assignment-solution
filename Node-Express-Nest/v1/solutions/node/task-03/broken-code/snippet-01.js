@@ -1,29 +1,30 @@
 const fs = require("fs").promises;
-
-let counter = 0;
-const results = [];
+const path = require("path");
 
 async function processFiles() {
   const files = ["file1.txt", "file2.txt", "file3.txt"];
 
-  for (let i = 0; i < files.length; i++) {
-    fs.readFile(files[i], "utf8")
-      .then((content) => {
-        counter++;
-        results[i] = content.toUpperCase();
-
-        if (counter === files.length) {
-          console.log("All files processed:", results);
+  const results = await Promise.all(
+    files.map(async (file) => {
+      const filePath = path.join(__dirname, file);
+      try {
+        const content = await fs.readFile(filePath, "utf8");
+        return content.toUpperCase();
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          throw error;
         }
-      })
-      .catch((err) => {
-        console.error(`Error reading ${files[i]}:`, err.message);
-        // Create the file for testing
-        fs.writeFile(files[i], `Content of ${files[i]}`).then(() =>
-          console.log(`Created ${files[i]}`)
-        );
-      });
-  }
+        const validContent = `Content of ${file}`;
+        await fs.writeFile(filePath, validContent, "utf8");
+        console.log(`Created ${file}`);
+        return validContent.toUpperCase();
+      }
+    })
+  );
+
+  console.log("All files processed:", results);
 }
 
-processFiles();
+processFiles().catch((error) => {
+  console.error("Error processing files:", error);
+});
