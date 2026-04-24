@@ -1,0 +1,21 @@
+Task 03 — Event loop analysis and async debugging
+
+In this task I focused on two things:
+showing event loop behavior clearly and fixing broken async code.
+I kept examples around setTimeout, setImmediate, fs.readFile,
+process.nextTick and Promise microtasks
+to make phase order visible in practice.
+
+For analysis helpers I return predicted execution order
+and added explanations for why that order happens in Node.
+For debugging parts I rewrote fragile flows with async/await:
+race-condition handling, callback-hell conversion,
+and mixed promise/callback code cleanup.
+
+I also wrapped risky async ops with a timeout helper,
+so hangs fail fast with explicit errors.
+Plus added test-file generation and phase-based logging
+to make failures easier to reproduce and inspect.
+
+To check code, from the repo root run:
+node Node-Express-Nest/v1/solutions/node/task-03-test.js

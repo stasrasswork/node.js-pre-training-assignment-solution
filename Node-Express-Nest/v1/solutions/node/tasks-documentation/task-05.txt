@@ -1,0 +1,34 @@
+Task 05 — Event-Driven Todo Server with analytics and event history
+
+Here I extended the Task 04 HTTP Todo server with EventEmitter:
+CRUD actions now emit domain events, and multiple listeners handle
+logging, analytics counters, and in-memory recent event storage.
+The server keeps only the last 100 emitted events for /events.
+
+Implemented event flow:
+todoCreated, todoUpdated, todoDeleted, todoViewed, todosListed,
+todoNotFound, validationError, and serverError.
+Each payload includes timestamp, and for request-based events
+I pass requestInfo (method, url, userAgent, ip).
+
+AnalyticsTracker tracks:
+totalCreated, totalUpdated, totalDeleted, totalViews, errors,
+plus dailyStats grouped by YYYY-MM-DD with per-day counters.
+GET /analytics returns these stats in JSON.
+
+Added endpoint GET /events with optional ?last=n:
+by default returns last 10 events, with validation for invalid n,
+and hard cap to 100 because history is bounded in memory.
+
+Validation and error handling:
+validateTodoPayload() checks field types and create rules,
+invalid JSON or invalid payload emits validationError + 400,
+missing todo id emits todoNotFound + 404,
+unexpected failures emit serverError + 500.
+
+Server lifecycle was also tightened:
+start() now awaits listen(), stop() awaits close(),
+so tests and async flow behave deterministically.
+
+To check code, from the repo root run:
+node Node-Express-Nest/v1/solutions/node/task-05-test.js

@@ -1,0 +1,22 @@
+Task 01 — MessageSystem on top of EventEmitter
+
+I basically subclassed Node’s EventEmitter 
+and wired a tiny messaging layer around it. 
+Messages live in an array, I give each one an id, 
+and after 100 messages I start dropping the oldest so 
+it doesn’t grow forever. When something is sent, 
+I fire the broad "message" event and also the event named 
+after the type (like "alert"), so you can listen to everything or 
+only what you care about.
+
+For users I kept a Set of names — duplicates just don’t get added. 
+Roles are a separate Map 
+because a Set of strings can’t really hold extra fields per person, 
+and that was the least painful way to do getUserRole / setUserRole.
+
+Extras I added: save the history to a JSON file, 
+a simple filter that searches message text (case-insensitive), 
+and optional roles when you add someone (defaults to user).
+
+To check code, from the repo root run:
+node Node-Express-Nest/v1/solutions/node/task-01-test.js

@@ -1,0 +1,21 @@
+Task 04 — Todo REST API on top of native HTTP module
+
+Here I implemented a small REST server without Express:
+plain http.createServer + manual routing by method and path.
+Storage is in-memory (array of todos) with incremental ids,
+and each todo keeps createdAt/updatedAt timestamps.
+
+Core handlers cover full CRUD:
+GET /todos (with completed=true/false filter),
+GET /todos/:id, POST /todos, PUT /todos/:id, DELETE /todos/:id.
+For request bodies I added parseBody() with JSON parsing,
+and for responses sendResponse() to keep one JSON format.
+
+Validation is centralized in validateTodo():
+title required on create, field types checked,
+and clear 400 errors returned for invalid input.
+Also handled CORS (including OPTIONS preflight)
+and added a simple request logger middleware.
+
+To check code, from the repo root run:
+node Node-Express-Nest/v1/solutions/node/task-04-test.js

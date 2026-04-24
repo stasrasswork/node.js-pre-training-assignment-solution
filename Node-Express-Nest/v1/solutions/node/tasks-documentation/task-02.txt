@@ -1,0 +1,21 @@
+Task 02 — CSV transform pipeline with Node streams
+
+I built this one as a stream pipeline:
+read file -> parse CSV -> normalize fields -> write CSV.
+Main idea was to process data in chunks and keep memory usage low,
+instead of reading whole file at once.
+
+The parser is a Transform stream with an internal buffer.
+It accumulates partial chunks and splits by line breaks,
+so broken lines across chunks are handled safely.
+Then each row goes through DataTransformer:
+name/city capitalization, email lowercasing, phone formatting,
+and date normalization to YYYY-MM-DD.
+
+For output I used another Transform that writes header once
+and serializes records back to CSV format.
+For the full flow I used async pipeline() with error handling,
+so any stream error fails the whole operation predictably.
+
+To check code, from the repo root run:
+node Node-Express-Nest/v1/solutions/node/task-02-test.js
