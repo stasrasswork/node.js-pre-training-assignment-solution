@@ -1,0 +1,12 @@
+Task 06 - Indexes and query optimization
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Created index on `todos(status)` to speed up status-based filtering.
+- Used `EXPLAIN` for query plan analysis of a status filter query.
+
+Issues encountered:
+- Query plan interpretation depends on data volume; with small datasets improvements are less visible.

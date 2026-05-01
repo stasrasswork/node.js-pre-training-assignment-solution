@@ -1,0 +1,14 @@
+Task 02 - Basic CRUD with raw SQL
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Executed CREATE operations with `INSERT INTO todos (...) VALUES (...)`.
+- Executed READ operation with `SELECT * FROM todos`.
+- Executed UPDATE operation to change todo status by `id`.
+- Executed DELETE operation to remove todo by `id`.
+
+Issues encountered:
+- No critical issues; operations were executed in sequence for verification.

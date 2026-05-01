@@ -1,0 +1,26 @@
+Task 09 - Audit trigger with raw SQL
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Created `audit_log` table with fields:
+  - `id` (serial primary key)
+  - `todo_id` (integer)
+  - `action` (text, expected values `UPDATE`/`DELETE`)
+  - `changed_at` (timestamp, default `now()`)
+- Implemented trigger function `log_todo_changes()` in PL/pgSQL.
+- Implemented trigger on `todos` for both events:
+  - `AFTER UPDATE`
+  - `AFTER DELETE`
+- On update, function writes `(NEW.id, 'UPDATE', now())` to `audit_log`.
+- On delete, function writes `(OLD.id, 'DELETE', now())` to `audit_log`.
+
+Issues encountered:
+- Function syntax initially failed (`no language specified` and `syntax error at end of input`).
+- Fixed by using correct function form:
+  - `RETURNS TRIGGER`
+  - `LANGUAGE plpgsql`
+  - proper `$$ ... $$` block
+  - semicolon after `return null;`

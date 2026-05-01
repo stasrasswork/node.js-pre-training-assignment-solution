@@ -1,0 +1,18 @@
+Task 01 - SQL schema setup
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Installed and used PostgreSQL for local development.
+- Created database `todo_app`.
+- Created base tables:
+  - `users` (`id`, `name`, `email`, `created_at`)
+  - `todos` (`id`, `title`, `description`, `status`, `created_at`)
+- Added primary keys and constraints:
+  - `users.email` unique
+  - `todos.status` limited to allowed values
+
+Issues encountered:
+- Table relation (`todos.user_id -> users.id`) was finalized in the next relationship task.

@@ -1,0 +1,14 @@
+Task 04 - Relationships (users <-> todos)
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Added `user_id` column to `todos`.
+- Added foreign key constraint:
+  - `todos.user_id` references `users.id`
+- Inserted sample users and linked sample todos to users.
+
+Issues encountered:
+- Needed to ensure users exist before assigning `user_id` in todos.

@@ -1,0 +1,28 @@
+Task 07 - ORM setup (TypeORM + NestJS)
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Created NestJS app in `DB/task-app`.
+- Installed ORM and drivers: `typeorm`, `@nestjs/typeorm`, `pg`, `dotenv`.
+- Added TypeORM config in `db/data-source.ts` using env variables from `.env`.
+- Configured scripts in `package.json`:
+  - `migration:generate`
+  - `migration:run`
+  - `migration:revert`
+  - `seed`
+- Created entities for `users` and `todos` with relation:
+  - one user -> many todos
+  - many todos -> one user
+- Generated and applied migrations for project schema.
+- Added seed data:
+  - at least 2 users
+  - at least 3 todos per user
+  - seed script in `db/seeds/seed.ts`
+
+Issues encountered:
+- Migration command arguments were initially passed incorrectly through npm scripts.
+- Table naming initially produced `user_entity`/`todo_entity`; this was aligned to `users`/`todos`.
+- Seed script initially failed on table cleanup because of FK constraints (`TRUNCATE users`); fixed by truncating related tables together with CASCADE.

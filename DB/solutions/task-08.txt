@@ -1,0 +1,23 @@
+Task 08 - ORM CRUD for todos
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Implemented CRUD endpoints in `todo.controller.ts`:
+  - `POST /todo`
+  - `GET /todo`
+  - `GET /todo/:id`
+  - `PUT /todo/:id`
+  - `DELETE /todo/:id`
+  - optional filter route: `GET /todo/user/:userId`
+- Implemented ORM logic in `todo.service.ts` using TypeORM repository.
+- Added DTO validation with `class-validator` and enabled global `ValidationPipe` in `main.ts`.
+- Added relation mapping for create/update with `userId -> user`.
+- Added not-found handling with `NotFoundException`.
+
+Issues encountered:
+- Route order caused `GET /todo/user/:userId` to be shadowed by `GET /todo/:id`; route order was corrected.
+- `update` originally could overwrite relation with `userId: undefined`; fixed to update relation only when `userId` is provided.
+- DTO `description` and entity constraints needed alignment to avoid validation/DB mismatch.

@@ -1,0 +1,39 @@
+Task 10 - Redis caching for user's todo list
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Installed Redis client library `ioredis`.
+- Added Redis config in `.env`:
+  - `REDIS_HOST`
+  - `REDIS_PORT`
+  - `REDIS_PASSWORD`
+  - `REDIS_TTL_SEC`
+- Implemented cache layer:
+  - `src/cache/cache.module.ts`
+  - `src/cache/cache.service.ts`
+  - `src/cache/cache.keys.ts`
+- Cache key format: `todos:user:{userId}`.
+- Added cache flow in `TodoService.getTodosByUserId(userId)`:
+  - cache hit -> return cached JSON
+  - cache miss -> read DB, write cache with TTL, return response
+- Added manual invalidation on mutations:
+  - `create` -> invalidate user key
+  - `update` -> invalidate previous user key; if owner changed, invalidate new user key too
+  - `delete` -> invalidate owner key
+
+TTL demonstration:
+- Used TTL value: `REDIS_TTL_SEC=10`.
+- Sequence:
+  1) `redis-cli DEL todos:user:1`
+  2) `curl http://localhost:3000/todo/user/1`
+  3) `redis-cli TTL todos:user:1` -> positive TTL (example observed: `7`)
+  4) after waiting past TTL, `redis-cli GET todos:user:1` -> `(nil)`
+  5) `redis-cli TTL todos:user:1` -> `-2` (key expired / absent)
+- This confirms automatic expiration and cache miss after TTL.
+
+Issues encountered:
+- Without quick second check, key could expire before next TTL read when TTL is very small.
+- Recommendation used during verification: keep a small but practical TTL and run checks immediately.

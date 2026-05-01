@@ -1,0 +1,14 @@
+Task 05 - Aggregation and grouping
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Implemented grouped count by todo status:
+  - `SELECT status, COUNT(*) ... GROUP BY status`
+- Implemented count of todos per user using `LEFT JOIN` and grouping.
+- Implemented query for users with zero todos using `LEFT JOIN` + `HAVING COUNT(...) = 0`.
+
+Issues encountered:
+- Needed `LEFT JOIN` (not `INNER JOIN`) to include users without todos.

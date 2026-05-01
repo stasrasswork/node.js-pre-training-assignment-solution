@@ -1,0 +1,18 @@
+Task 03 - Filtering and sorting with raw SQL
+
+PR/Commits:
+- PR: not created yet
+- Commits: not provided yet
+
+What was done:
+- Added extra test todos for query checks.
+- Implemented filtering by status:
+  - `WHERE status = 'active'`
+  - `WHERE status = 'completed'`
+- Implemented sorting by `created_at`:
+  - ascending (`ORDER BY created_at`)
+  - descending (`ORDER BY created_at DESC`)
+- Implemented keyword search in `title` or `description` using `LIKE`.
+
+Issues encountered:
+- No critical issues; added more sample rows to make filtering/sorting results visible.
