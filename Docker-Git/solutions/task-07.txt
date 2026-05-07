@@ -1,0 +1,106 @@
+Task 07 — Docker Compose: API + Postgres + pgAdmin
+
+Goal: one command brings up a small Express app (Node 24), Postgres 16, and
+pgAdmin. They should talk over Compose networking, and Postgres data should survive
+restarts thanks to a volume.
+
+My file is named compose.yaml — that is normal for Compose V2 (same idea as
+docker-compose.yml).
+
+Full compose file from express-app/compose.yaml:
+
+services:
+  postgres:
+    restart: always
+    image: postgres:16
+    container_name: postgres_container
+    ports:
+      - "5432:5432"
+    env_file:
+      - config/.env.local
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    restart: always
+    image: dpage/pgadmin4
+    container_name: pgadmin_container
+    env_file:
+      - config/.env.local
+    ports:
+      - 8080:80
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  app:
+    build: .
+    restart: always
+    container_name: app_container
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    working_dir: /app
+    command: npm start
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+App Dockerfile (express-app/dockerfile): node:24-alpine, npm install, copy app,
+expose 3000, npm start.
+
+Endpoints (express-app/app.js):
+  GET /health — JSON status ok
+  GET /data   — JSON array from data/data.json
+
+Commands I use day to day
+
+From express-app/ (where compose.yaml lives):
+
+  docker compose up --build
+  docker compose up --build -d
+  docker compose ps
+  docker compose logs postgres
+  docker compose logs pgadmin
+  docker compose logs app
+  docker compose down
+  docker compose down -v
+
+URLs
+
+  App:    http://localhost:3000
+  Health: http://localhost:3000/health
+  Data:   http://localhost:3000/data
+  pgAdmin: http://localhost:8080
+
+Credentials (my config/.env.local)
+
+Postgres from the host: localhost:5432, user postgres, password postgres, db postgres
+
+pgAdmin login screen: admin@example.com / password
+
+Inside pgAdmin, register a server pointing at host postgres (the Compose service
+name — not localhost), port 5432, same user/password.
+
+docker compose ps output
+
+Paste your real output here after a successful up — names/times vary.
+
+What I learned
+
+Postgres healthcheck lets the app wait until the DB is actually ready. Volumes
+keep data. pgAdmin is just another container on the same network.

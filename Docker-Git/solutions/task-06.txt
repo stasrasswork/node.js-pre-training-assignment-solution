@@ -1,0 +1,52 @@
+Task 06 — interactive rebase and cleaner history
+
+I used interactive rebase to squash a noisy "fix typo" commit into the previous
+one, cleaned up messages, then rebased my feature onto an updated master. After
+that I tried the same integration with merge on a throwaway branch just to see
+the graph difference.
+
+Interactive rebase — commands I used
+
+  git checkout feature/user-authentication
+  git rebase -i HEAD~3
+
+In the todo list:
+  - reword — fix a bad commit message
+  - squash / fixup — fold the typo fix into the commit before it
+
+If Git stops for a conflict:
+  edit files -> git add ... -> git rebase --continue
+
+If I hated everything and wanted out:
+  git rebase --abort
+
+Rebase feature onto newer master:
+
+  git checkout master
+  # (imagine someone else pushed work — I made a commit here)
+  git checkout feature/user-authentication
+  git rebase master
+
+Before / after (git log --oneline) — rough picture
+
+Before: lots of tiny commits, one random typo fix, weak messages.
+
+After: fewer commits, typo absorbed, messages you can actually read.
+
+Rebase vs merge — how I think about it
+
+Rebase replays your commits on top of the latest main. History looks straighter,
+like you coded everything after the newest team changes.
+
+Merge keeps the fact that a branch existed. With --no-ff you get a merge commit
+that screams "we integrated a branch here."
+
+When to use which: rebase before merging if the team likes a linear story;
+merge if you do not want to rewrite shared history or you want obvious merge points.
+
+Stuff that tripped me up
+
+- Stuck rebase / weird .git/rebase-merge errors
+- Wrong editor for rebase (vi vs code not in PATH)
+- Conflict in auth.js while rebasing onto fresh master
+- Fast-forward merge looked "too flat" compared to merge --no-ff

@@ -1,0 +1,49 @@
+Task 02 — branches and a simple merge
+
+I made two feature branches from master, but only merged the first one back.
+That way I could see how branching feels before things get messy.
+
+What happened
+
+Branch 1 — add scripts to package.json:
+  git checkout -b feature/add-scripts
+  git add package.json
+  git commit -m "Added scripts"
+
+Back to master, merge branch 1, delete it:
+  git checkout master
+  git merge feature/add-scripts
+  git branch -d feature/add-scripts
+
+Branch 2 — I created it but did not merge it in this exercise:
+  git checkout -b feature/add-dependencies
+  (later I went back to master)
+
+Handy commands:
+  git branch -a
+  git log --graph --oneline
+
+How git branch -a looked at different moments
+
+Right after creating feature/add-scripts:
+  * feature/add-scripts
+    master
+
+After feature/add-dependencies existed and I was on master:
+    feature/add-dependencies
+    feature/add-scripts
+  * master
+
+After merging and deleting feature/add-scripts:
+    feature/add-dependencies
+  * master
+
+Example graph log:
+  * 403585d Added scripts
+  * e2f1d70 readme + basic info
+  * 068fa18 Added .gitignore
+
+Takeaway
+
+Merging a branch that is "ahead" of master often fast-forwards master. Deleting
+the merged branch is safe and keeps the branch list tidy.

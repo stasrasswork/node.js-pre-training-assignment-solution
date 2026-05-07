@@ -1,0 +1,62 @@
+Task 03 — first Docker container for a tiny Node app
+
+I packaged a small Node app as an image, ran it, hit it with curl, read logs,
+then stopped and removed the container so my machine stayed clean.
+
+Dockerfile I used:
+
+FROM node:24-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+
+Commands I actually ran
+
+Build:
+  docker build -t my-node-app:v1 .
+
+See running containers:
+  docker ps
+
+Run in the background with port mapping:
+  docker run -d --name my-node-app-v1 -p 3000:3000 my-node-app:v1
+
+Peek inside config:
+  docker inspect my-node-app-v1
+
+Smoke test from the host:
+  curl http://localhost:3000
+
+See stdout/stderr:
+  docker logs my-node-app-v1
+
+Clean up:
+  docker stop my-node-app-v1
+  docker rm my-node-app-v1
+
+Example snippets from my machine
+
+docker images (one line):
+  my-node-app   v1   <image-id>   <created-time>   <size>
+
+docker ps while it was running:
+  CONTAINER ID   IMAGE            COMMAND                  STATUS        PORTS                                         NAMES
+  e3d06d05f77e   my-node-app:v1   "docker-entrypoint.s…"   Up 2 seconds  0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp   my-node-app-v1
+
+docker inspect — fields I cared about:
+  Name: /my-node-app-v1
+  Image: my-node-app:v1
+  WorkingDir: /app
+  Cmd: ["npm","start"]
+  PortBindings: 3000/tcp -> HostPort 3000
+
+curl:
+  curl http://localhost:3000
+  Hello Docker!
+
+Takeaway
+
+build -> run (-p maps ports) -> curl -> logs -> stop -> rm is the basic loop.

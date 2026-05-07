@@ -1,0 +1,66 @@
+Task 05 — why multi-stage Docker builds matter
+
+I built the same TypeScript Node app twice: one fat single-stage image and one
+multi-stage image. Then I compared sizes — the difference was huge.
+
+Single-stage Dockerfile (Dockerfile.single):
+
+FROM node:24
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "start"]
+
+Multi-stage Dockerfile (dockerfile):
+
+FROM node:24 AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build
+
+FROM node:24-alpine AS production
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --omit=dev
+COPY --from=builder /app/dist ./dist
+EXPOSE 3000
+CMD ["npm", "start"]
+
+.dockerignore (what I excluded from the build context):
+
+node_modules/
+dist/
+.env
+.gitignore
+.dockerignore
+.git
+.github
+.vscode
+.eslintrc.js
+.prettierrc.js
+.prettierignore
+.prettierignore
+
+Commands:
+
+  docker build -f Dockerfile.single -t ts-node-app:single .
+  docker build -t ts-node-app:multi .
+  docker images | grep ts-node-app
+
+Sizes on my machine:
+
+  ts-node-app:single -> 1.67GB
+  ts-node-app:multi  -> 237MB
+
+Takeaway
+
+The multi-stage build drops a lot of build-time junk. Final image only needs
+compiled output plus production deps — not the whole dev toolchain sitting in
+one giant layer.

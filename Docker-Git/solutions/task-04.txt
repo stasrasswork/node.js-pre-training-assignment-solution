@@ -1,0 +1,47 @@
+Task 04 — merge conflict on purpose
+
+I made two branches that both edited the same line in README.md, merged them
+one after another into main, and fixed the conflict by hand.
+
+Flow
+
+First branch:
+  git checkout -b feature/update-readme-v1
+  git add README.md
+  git commit -m "Updated readme title v1"
+
+Second branch from main:
+  git checkout main
+  git checkout -b feature/update-readme-v2
+  git add README.md
+  git commit -m "Modified readme from another branch"
+
+Merge both into main:
+  git checkout main
+  git merge feature/update-readme-v1
+  git merge feature/update-readme-v2   # this one conflicted
+
+What the file looked like with markers:
+
+<<<<<<< HEAD
+# My Awesome Project v1
+=======
+# My Super Project v2
+>>>>>>> feature/update-readme-v2
+
+How I fixed it
+
+- Deleted <<<<<<<, =======, >>>>>>> lines.
+- Picked a title that combined the idea:
+  # My Awesome Super Project v1 + v2
+- Kept the description line:
+  Simple repo.
+
+Finished the merge:
+  git add README.md
+  git commit -m "Merged two branches"
+
+Takeaway
+
+Conflicts are normal when two histories touch the same lines. Read the markers,
+decide what the final text should be, remove markers, add, commit.

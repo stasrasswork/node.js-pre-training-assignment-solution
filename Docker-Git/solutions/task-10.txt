@@ -1,0 +1,146 @@
+Task 10 - Advanced Docker networking and data persistence
+
+I did this task in 4 parts: custom network, multi-container communication,
+volume types, and persistence checks.
+
+Network setup
+
+  docker network create mongo-net
+  docker network inspect mongo-net
+
+I also tried subnet config separately:
+
+  docker network create \
+    --driver=bridge \
+    --subnet=172.28.0.0/16 \
+    --ip-range=172.28.5.0/24 \
+    --gateway=172.28.5.254 \
+    app-network
+
+Multi-container communication
+
+MongoDB + named volume:
+
+  docker volume create mongo-data
+  docker run -d \
+    --name mongo-db \
+    --network mongo-net \
+    -v mongo-data:/data/db \
+    mongo:latest
+
+Mongo Express in the same network:
+
+  docker run -d \
+    --name mongo-express \
+    --network mongo-net \
+    -p 8081:8081 \
+    -e ME_CONFIG_MONGODB_SERVER=mongo-db \
+    -e ME_CONFIG_BASICAUTH=false \
+    mongo-express:latest
+
+Simple Node.js app (connects by service name mongo-db):
+
+  docker run --rm \
+    --name node-app \
+    --network mongo-net \
+    -v "$PWD/app":/app \
+    -w /app \
+    node:20-alpine \
+    sh -c "npm install && node index.js"
+
+What I checked:
+
+  docker network inspect mongo-net
+  docker logs mongo-express
+  docker logs node-app
+
+Both mongo-db and mongo-express were listed in network inspect, and node-app
+connected to mongodb://mongo-db:27017.
+
+Volume types
+
+1) Named volume (DB data):
+
+  docker volume create mongo-data
+  docker inspect mongo-db
+
+2) Bind mount (code sharing during development):
+
+  docker run --rm -it \
+    --name node-dev \
+    --network mongo-net \
+    --mount type=bind,src="$PWD/app",dst=/app \
+    -w /app \
+    node:20-alpine sh
+
+3) tmpfs mount (temporary data in RAM):
+
+  docker run -d \
+    --name tmpfs-test \
+    --mount type=tmpfs,dst=/tmp-data \
+    alpine sleep 10000
+
+  docker exec -it tmpfs-test sh -c "echo hello > /tmp-data/test.txt && ls /tmp-data"
+  docker rm -f tmpfs-test
+
+After removing tmpfs-test, data from /tmp-data disappeared as expected.
+
+Data persistence test (stop/start)
+
+Insert test record:
+
+  docker exec -it mongo-db mongosh --eval 'db.getSiblingDB("testdb").notes.insertOne({msg:"persist"})'
+
+Restart container:
+
+  docker stop mongo-db
+  docker start mongo-db
+
+Check record:
+
+  docker exec -it mongo-db mongosh --eval 'db.getSiblingDB("testdb").notes.find().toArray()'
+
+The record stayed after restart, so persistence via mongo-data works.
+
+Network isolation quick check
+
+  docker network create net-a
+  docker network create net-b
+  docker run -d --name box-a --network net-a alpine sleep 10000
+  docker run -d --name box-b --network net-b alpine sleep 10000
+  docker network connect net-b box-a
+
+Before connect, containers were isolated. After connect, box-a could access both networks.
+
+Network topology (text)
+
+  [node-app] ----\
+                  \
+  [mongo-express] ---- (mongo-net bridge) ---- [mongo-db] ---- [mongo-data volume]
+                  /
+  [node-dev] ----/
+
+docker network ls (example)
+
+  NETWORK ID     NAME       DRIVER    SCOPE
+  ...            bridge     bridge    local
+  ...            host       host      local
+  ...            none       null      local
+  ...            mongo-net  bridge    local
+
+docker volume ls (example)
+
+  DRIVER    VOLUME NAME
+  local     mongo-data
+
+Cleanup
+
+  docker rm -f mongo-express mongo-db box-a box-b
+  docker volume rm mongo-data
+  docker network rm mongo-net net-a net-b
+
+Takeaway
+
+In a user-defined bridge network, containers resolve each other by name (mongo-db).
+Named volume keeps Mongo data after restart, bind mount is convenient for local dev,
+and tmpfs is good for temporary data that should not persist.

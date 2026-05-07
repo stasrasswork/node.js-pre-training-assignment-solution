@@ -1,0 +1,78 @@
+Task 08 — pretend you have a company repo and a fork
+
+Without GitHub I faked two remotes locally: upstream = "company", origin = "my fork".
+They must be different paths or URLs — two names pointing at the same repo misses
+the point of the exercise.
+
+Wire them up (example):
+
+  git remote add upstream ../remotes/upstream.git
+  git remote add origin ../remotes/origin.git
+
+Sanity check:
+
+  git remote -v
+
+You want two different lines — not the same URL twice.
+
+Workflow I followed
+
+Start from main, branch for work:
+
+  git checkout main
+  git checkout -b feature/task-08
+
+Several small commits with real messages (not "wip" spam).
+
+Push the feature to the fork remote:
+
+  git push -u origin feature/task-08
+
+No PR website — simulate merge locally:
+
+  git checkout main
+  git merge --no-ff feature/task-08 -m "merge: simulate landing the PR"
+
+Push main where the assignment asks (both remotes if that is the story):
+
+  git push upstream main
+  git push origin main
+
+"Review comments" are just more commits on the same feature branch:
+
+  git checkout feature/task-08
+  # edits
+  git add .
+  git commit -m "fix: address review feedback"
+
+If I rewrote history (rebase / squash) and need to update the remote branch:
+
+  git push --force-with-lease origin feature/task-08
+
+Why --force-with-lease beats bare --force: Git refuses to clobber the remote if
+new commits appeared that you have not seen — fewer nasty surprises.
+
+Keeping the fork in sync with upstream
+
+  git checkout main
+  git fetch upstream
+  git merge upstream/main
+  git push origin main
+
+If the feature branch is still open, refresh it from main:
+
+  git checkout feature/task-08
+  git merge main
+  # or: git rebase main  (often needs force-with-lease afterward)
+
+Commit message habits I try to follow
+
+Short subject line, imperative mood, one idea per commit. If it is non-obvious,
+add a body explaining why. Do not mix unrelated refactors with a bugfix in the
+same commit.
+
+When local and origin/feature disagree
+
+  git log --oneline --left-right --graph HEAD...origin/feature
+
+Then consciously choose merge, rebase, or force-with-lease — do not guess.

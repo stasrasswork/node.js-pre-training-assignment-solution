@@ -1,0 +1,32 @@
+Task 01 — first repo, first commits
+
+I started from scratch: made a few files, staged them in two steps, and checked
+that Git was doing what I expected.
+
+What I did (roughly)
+
+Created empty files to have something to commit:
+  touch README.md
+  touch .gitignore
+  touch package.json
+
+First commit was only .gitignore (on purpose — to see how partial staging works):
+  git add .gitignore
+  git commit -m "Added .gitignore"
+
+Then I staged everything else and committed again:
+  git add .
+  git commit -m "readme + basic info"
+
+Useful checks while learning:
+  git status
+  git log --oneline
+
+Example git log --oneline from my run:
+  e2f1d70 readme + basic info
+  068fa18 Added .gitignore
+
+Takeaway
+
+git add can be file-by-file or "everything". git status tells you what is staged
+vs not. git log --oneline is the fastest way to sanity-check history.

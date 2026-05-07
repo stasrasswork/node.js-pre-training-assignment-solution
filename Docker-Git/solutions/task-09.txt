@@ -1,0 +1,103 @@
+Task 09 — Docker commands and image management
+
+I walked through pull/tag/save/load, ran a few containers, poked at stats and logs,
+then cleaned up. Names like my-nginx are just examples.
+
+Images
+
+  docker pull nginx:alpine
+  docker pull redis:7-alpine
+  docker pull node:24-alpine
+  docker image ls
+  docker inspect nginx:alpine
+  docker tag nginx:alpine my-nginx:lesson
+  docker save -o nginx-alpine.tar nginx:alpine
+  docker load -i nginx-alpine.tar
+  docker rmi my-nginx:lesson
+  docker image prune -a
+
+Containers
+
+  docker run -d -p 8080:80 --name my-nginx nginx:alpine
+  docker run -d --name my-redis --restart unless-stopped redis:7-alpine
+  docker create --name my-node node:24-alpine sleep 3600
+  docker start my-node
+  docker exec -it my-nginx sh
+  docker exec -it my-redis redis-cli
+  docker cp ./file.txt my-nginx:/tmp/file.txt
+  docker cp my-nginx:/etc/nginx/nginx.conf ./nginx.conf
+
+Monitoring and networks
+
+  docker stats
+  docker stats --no-stream
+  docker logs -t my-nginx
+  docker logs -f -t --tail 50 my-nginx
+  docker inspect my-nginx
+  docker inspect -f '{{ json .Mounts }}' my-nginx
+  docker volume create my-data
+  docker volume ls
+  docker volume inspect my-data
+  docker network create app-net
+  docker network inspect app-net
+
+Cleanup
+
+I stopped containers, removed them, then removed images/volumes/networks I created.
+I did not touch the default networks bridge, host, and none.
+
+  docker stop my-nginx my-redis my-node
+  docker rm my-nginx my-redis my-node
+  docker rmi ...
+  docker volume rm my-data
+  docker network rm app-net
+  docker system prune
+  docker system prune -a --volumes
+
+docker system df before cleanup (I had pulled nginx:alpine and nothing was using it):
+
+  TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+  Images          1         0         91.77MB   91.77MB (100%)
+  Containers      0         0         0B        0B
+  Local Volumes   0         0         0B        0B
+  Build Cache     0         0         0B        0B
+
+Then I ran:
+
+  docker system prune -a -f
+
+Prune deleted nginx:alpine and reclaimed about 26MB on my machine.
+
+docker system df after cleanup:
+
+  TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+  Images          0         0         0B        0B
+  Containers      0         0         0B        0B
+  Local Volumes   0         0         0B        0B
+  Build Cache     0         0         0B        0B
+
+Inspect snippet (the real output is JSON; this is the shape I looked at):
+
+  "Name": "/my-nginx",
+  "State": { "Status": "running" },
+  "Mounts": [],
+  "HostConfig": { "PortBindings": ... }
+
+Logs with timestamps:
+
+  docker logs -t my-nginx
+
+Most useful for me
+
+  docker ps -a
+  docker logs -f -t
+  docker exec -it
+  docker inspect
+  docker system df
+  docker volume / network inspect
+
+Takeaway
+
+docker inspect answers “what did I actually run?” docker logs -t and docker stats
+are the first places I go when something looks wrong. prune frees space but read
+the flags first so you do not drop images or volumes you still need.
